@@ -1,8 +1,30 @@
+import { useState } from "react";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { Textarea } from "./components/ui/textarea";
+import { useCompletion } from "ai/react";
 
 export function App() {
+  const [videoId, setVideoId] = useState<string | null>(null);
+  const [temperature, setTemperature] = useState(0.5);
+  const {
+    input,
+    setInput,
+    handleInputChange,
+    handleSubmit,
+    completion,
+    isLoading,
+  } = useCompletion({
+    api: "http://localhost:3333/ai/complete",
+    body: {
+      videoId,
+      temperature,
+    },
+    headers: {
+      'Content-type': 'application/json'
+    }
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -12,11 +34,14 @@ export function App() {
             <Textarea
               placeholder="Inclua o prompt para IA..."
               className="resize-none p-4 leading-relaxed"
+              value={input}
+              onChange={handleInputChange}
             />
             <Textarea
               placeholder="Resultado gerado pela IA..."
               readOnly
               className="resize-none p-4 leading-relaxed"
+              value={completion}
             />
           </div>
           <p className="text-sm text-muted-foreground">
@@ -25,7 +50,14 @@ export function App() {
             prompt para adicionar o conteúdo da transcrição do vídeo selecionado
           </p>
         </div>
-        <Sidebar />
+        <Sidebar
+          onPromptSelected={setInput}
+          setVideoId={setVideoId}
+          temperature={temperature}
+          setTemperature={setTemperature}
+          handleSubmit={handleSubmit}
+          disabled={isLoading}
+        />
       </main>
     </div>
   );
